@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(chmod +x:*)",
+      "Bash(brew install:*)",
+      "Bash(/opt/homebrew/bin/gradle wrapper:*)",
+      "Bash(./gradlew shadowJar:*)",
+      "Bash(jar tf:*)",
+      "Read(//private/tmp/**)",
+      "Bash(jar xf /Users/rasmus/.gradle/caches/modules-2/files-2.1/com.github.ajalt.clikt/clikt-jvm/4.4.0/df1e97760c6d0d96033a96a820a4a6e1d0e2f267/clikt-jvm.jar com/github/ajalt/clikt/core/CliktCommand.class)",
+      "Bash(javap -p com/github/ajalt/clikt/core/CliktCommand.class)"
+    ]
+  }
+}
