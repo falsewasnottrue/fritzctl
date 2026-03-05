@@ -14,6 +14,13 @@ repositories {
 dependencies {
     implementation("com.github.ajalt.clikt:clikt:4.4.0")
     implementation("com.github.ajalt.mordant:mordant:2.7.2")
+
+    testImplementation("org.junit.jupiter:junit-jupiter:5.11.0")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.1.0")
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 application {
