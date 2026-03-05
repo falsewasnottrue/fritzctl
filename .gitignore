@@ -1,0 +1,15 @@
+# Build-Artefakte
+build/
+
+# Gradle-Cache (außer Wrapper, der ins Repo gehört)
+.gradle/
+
+# IDE
+.idea/
+*.iml
+
+# macOS
+.DS_Store
+
+# Claude
+.claude/
