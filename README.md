@@ -68,6 +68,7 @@ Beispiel-Ausgabe (`-o json`, Fehler):
 |--------|--------------|
 | [`auth`](#auth) | Authentifizierung – Anmelden und Abmelden an der Fritzbox |
 | [`device`](#device) | Smarthome-Geräte – Auflisten, Anzeigen und Schalten (AHA-HTTP-Schnittstelle) |
+| [`net`](#net) | Netzwerk – Verbundene Geräte und WAN-Status (TR-064-Schnittstelle) |
 
 ---
 
@@ -263,3 +264,48 @@ fritzctl [-o <format>] device toggle <AIN>
 ```bash
 fritzctl device toggle "11630 0015376"
 ```
+
+---
+
+## net
+
+Befehle zur Netzwerk-Diagnose über die TR-064/UPnP-Schnittstelle der Fritz!Box (Port 49000). Kompatibel mit Fritz!OS ab 6.x. Alle Befehle setzen eine aktive Session voraus (siehe [`auth login`](#fritzctl-auth-login)).
+
+Die Authentifizierung erfolgt über HTTP-Digest mit dem gespeicherten Benutzernamen und der SID als Passwort (Fritz!OS ≥ 7.25).
+
+| Befehl | Beschreibung |
+|--------|--------------|
+| [`net hosts`](#fritzctl-net-hosts) | Alle verbundenen Netzwerk-Geräte auflisten |
+| [`net wan`](#fritzctl-net-wan) | WAN-Status anzeigen |
+
+### `fritzctl net hosts`
+
+Listet alle bekannten Netzwerk-Geräte auf (LAN und WLAN), sortiert nach Status (online zuerst) und Name.
+
+```
+fritzctl [-o <format>] net hosts
+```
+
+```bash
+fritzctl net hosts
+fritzctl -o json net hosts | jq '.hosts[] | select(.active) | .ip'
+```
+
+Ausgabefelder: `name`, `ip`, `mac`, `type` (LAN/WLAN/Powerline), `active`
+
+---
+
+### `fritzctl net wan`
+
+Zeigt den aktuellen WAN-Status: Verbindungstyp, externe IP-Adresse, maximale und aktuelle Up-/Download-Geschwindigkeit sowie Verbindungsuptime.
+
+```
+fritzctl [-o <format>] net wan
+```
+
+```bash
+fritzctl net wan
+fritzctl -o json net wan | jq .externalIp
+```
+
+Ausgabefelder: `accessType`, `linkStatus`, `externalIp`, `upstreamMaxBps`, `downstreamMaxBps`, `upstreamCurrentBps`, `downstreamCurrentBps`, `uptimeSeconds`
