@@ -5,9 +5,9 @@ import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.mordant.rendering.TextColors.cyan
 import com.github.ajalt.mordant.rendering.TextColors.green
-import com.github.ajalt.mordant.rendering.TextColors.red
 import com.github.ajalt.mordant.terminal.Terminal
 import fritzctl.FritzConfig
+import fritzctl.Output
 import fritzctl.auth.FritzAuth
 import fritzctl.auth.FritzAuthException
 import fritzctl.auth.Session
@@ -26,6 +26,7 @@ class LoginCommand : CliktCommand(name = "login") {
         val config = currentContext.findObject<FritzConfig>()
         val host = config?.host ?: "fritz.box"
         val verbose = config?.verbose ?: false
+        val output = config?.output ?: Output(null, terminal)
 
         val log: (String) -> Unit = { msg ->
             if (verbose) terminal.println(cyan("  [debug] $msg"))
@@ -39,23 +40,30 @@ class LoginCommand : CliktCommand(name = "login") {
             ?: passwordOpt
             ?: terminal.prompt("Passwort", hideInput = true)!!
 
-        try {
-            if (verbose) {
-                terminal.println(cyan("  [debug] Starte Login für Benutzer '$username' auf $host"))
-            } else {
-                terminal.print("Verbinde mit $host ...")
-            }
+        if (verbose) {
+            terminal.println(cyan("  [debug] Starte Login für Benutzer '$username' auf $host"))
+        } else if (!output.isMachineReadable) {
+            terminal.print("Verbinde mit $host ...")
+        }
 
+        try {
             val sid = FritzAuth.login(host, username, password, log)
+            val sessionFile = SessionStore.path()
             SessionStore.save(Session(sid = sid, host = host, username = username))
 
-            if (!verbose) terminal.print(" ")
-            terminal.println(green("OK"))
-            terminal.println("Angemeldet als '$username'.")
-            terminal.println("Session gespeichert in: ${SessionStore.path()}")
+            output.success(
+                "host" to host,
+                "username" to username,
+                "sid" to sid,
+                "sessionFile" to sessionFile,
+            ) {
+                if (!verbose) terminal.print(" ")
+                terminal.println(green("OK"))
+                terminal.println("Angemeldet als '$username'.")
+                terminal.println("Session gespeichert in: $sessionFile")
+            }
         } catch (e: FritzAuthException) {
-            if (!verbose) terminal.print(" ")
-            terminal.println(red("Fehler: ${e.message}"))
+            output.error(e.message ?: "Unbekannter Fehler")
             exitProcess(1)
         }
     }

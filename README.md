@@ -13,13 +13,52 @@ Das fertige JAR liegt unter `build/libs/fritzctl.jar`. Das mitgelieferte Wrapper
 ## Allgemeine Optionen
 
 ```
-fritzctl [--host <hostname>] [--verbose] <gruppe> <befehl> [optionen]
+fritzctl [--host <hostname>] [--verbose] [-o <format>] <gruppe> <befehl> [optionen]
 ```
 
 | Option | Kurz | Standard | Beschreibung |
 |--------|------|----------|--------------|
 | `--host` | `-H` | `fritz.box` | Hostname oder IP-Adresse der Fritzbox |
 | `--verbose` | `-v` | – | Ausführliche Debug-Ausgaben aktivieren |
+| `--output` | `-o` | – | Ausgabeformat für maschinelle Weiterverarbeitung (`yaml`, `json`) |
+
+**Ausgabeformate (`-o`):**
+
+Ohne `-o` erzeugen alle Befehle eine menschenlesbare Ausgabe. Mit `-o` wird stattdessen ein strukturiertes Format ausgegeben, das sich zur Weiterverarbeitung in Skripten eignet.
+
+| Wert | Beschreibung |
+|------|--------------|
+| `yaml` | YAML-Ausgabe |
+| `json` | JSON-Ausgabe |
+
+Jede strukturierte Antwort enthält mindestens das Feld `status` mit dem Wert `ok` oder `error`. Im Fehlerfall ist zusätzlich das Feld `message` gesetzt.
+
+```bash
+# YAML-Ausgabe
+fritzctl -o yaml auth login --user admin --password geheim
+
+# JSON-Ausgabe
+fritzctl -o json auth login --user admin --password geheim
+```
+
+Beispiel-Ausgabe (`-o json`, Erfolg):
+```json
+{
+  "status": "ok",
+  "host": "fritz.box",
+  "username": "admin",
+  "sid": "8b4994376ab804ca",
+  "sessionFile": "/Users/alice/.fritzctl/session"
+}
+```
+
+Beispiel-Ausgabe (`-o json`, Fehler):
+```json
+{
+  "status": "error",
+  "message": "Anmeldung fehlgeschlagen. Benutzername oder Kennwort falsch."
+}
+```
 
 ---
 
@@ -30,7 +69,7 @@ fritzctl [--host <hostname>] [--verbose] <gruppe> <befehl> [optionen]
 Meldet sich an der Fritzbox an. Die erhaltene Session-ID (SID) wird in `~/.fritzctl/session` gespeichert und steht nachfolgenden Befehlen automatisch zur Verfügung.
 
 ```
-fritzctl [--host <hostname>] [--verbose] auth login [--user <name>] [--password <passwort>]
+fritzctl [--host <hostname>] [--verbose] [-o <format>] auth login [--user <name>] [--password <passwort>]
 ```
 
 **Optionen:**
@@ -75,6 +114,12 @@ fritzctl --host 192.168.1.1 auth login --user admin
 
 # Mit Debug-Ausgaben (zeigt Challenge, Response-Berechnung, HTTP-Antworten)
 fritzctl --verbose auth login
+
+# Ausgabe als YAML
+fritzctl -o yaml auth login --user admin
+
+# Ausgabe als JSON (z. B. für Weiterverarbeitung mit jq)
+fritzctl -o json auth login --user admin | jq .sid
 ```
 
 **Authentifizierungsverfahren:**
@@ -99,7 +144,7 @@ fritzctl unterstützt beide von der Fritzbox angebotenen Verfahren und wählt au
 Meldet sich von der Fritzbox ab und löscht die lokal gespeicherte Session.
 
 ```
-fritzctl [--host <hostname>] [--verbose] auth logout
+fritzctl [--host <hostname>] [--verbose] [-o <format>] auth logout
 ```
 
 ```bash
@@ -108,4 +153,7 @@ fritzctl auth logout
 
 # Mit Debug-Ausgaben
 fritzctl --verbose auth logout
+
+# Ausgabe als JSON
+fritzctl -o json auth logout
 ```

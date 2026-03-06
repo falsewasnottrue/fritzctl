@@ -1,3 +1,3 @@
 package fritzctl
 
-data class FritzConfig(val host: String, val verbose: Boolean)
+data class FritzConfig(val host: String, val verbose: Boolean, val output: Output)
