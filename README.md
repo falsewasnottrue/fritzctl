@@ -62,7 +62,23 @@ Beispiel-Ausgabe (`-o json`, Fehler):
 
 ---
 
-## Authentifizierung
+## Kommandogruppen
+
+| Gruppe | Beschreibung |
+|--------|--------------|
+| [`auth`](#auth) | Authentifizierung – Anmelden und Abmelden an der Fritzbox |
+| [`device`](#device) | Smarthome-Geräte – Auflisten, Anzeigen und Schalten (AHA-HTTP-Schnittstelle) |
+
+---
+
+## auth
+
+Befehle zur Authentifizierung an der Fritzbox. Die Session-ID wird nach erfolgreicher Anmeldung in `~/.fritzctl/session` gespeichert und von allen anderen Befehlen automatisch gelesen.
+
+| Befehl | Beschreibung |
+|--------|--------------|
+| [`auth login`](#fritzctl-auth-login) | An der Fritzbox anmelden |
+| [`auth logout`](#fritzctl-auth-logout) | Von der Fritzbox abmelden |
 
 ### `fritzctl auth login`
 
@@ -156,4 +172,94 @@ fritzctl --verbose auth logout
 
 # Ausgabe als JSON
 fritzctl -o json auth logout
+```
+
+---
+
+## device
+
+Befehle zur Verwaltung von Smarthome-Geräten über die AVM AHA-HTTP-Schnittstelle (`/webservices/homeautoswitch.lua`). Kompatibel mit Fritz!OS ab 6.x. Alle Befehle setzen eine aktive Session voraus (siehe [`auth login`](#fritzctl-auth-login)).
+
+Die Geräte-Identifikation erfolgt über die **AIN** (Actor Identification Number), z. B. `11630 0015376`. Die AIN ist in der Fritz!Box-Oberfläche unter den Geräteeigenschaften sichtbar oder über `fritzctl device list` abrufbar.
+
+| Befehl | Beschreibung |
+|--------|--------------|
+| [`device list`](#fritzctl-device-list) | Alle Smarthome-Geräte auflisten |
+| [`device get`](#fritzctl-device-get) | Details zu einem Gerät anzeigen |
+| [`device on`](#fritzctl-device-on) | Gerät einschalten |
+| [`device off`](#fritzctl-device-off) | Gerät ausschalten |
+| [`device toggle`](#fritzctl-device-toggle) | Schaltzustand eines Geräts wechseln |
+
+### `fritzctl device list`
+
+Gibt eine Tabelle aller bekannten Smarthome-Geräte aus (AIN, Name, Status, Schaltzustand, Temperatur, Leistung).
+
+```
+fritzctl [-o <format>] device list
+```
+
+```bash
+fritzctl device list
+fritzctl -o json device list | jq '.devices[].name'
+```
+
+---
+
+### `fritzctl device get`
+
+Zeigt Details zu einem einzelnen Gerät (Name, Status, Schaltzustand, Temperatur, Leistung, Energie).
+
+```
+fritzctl [-o <format>] device get <AIN>
+```
+
+| Argument | Beschreibung |
+|----------|--------------|
+| `AIN` | Actor Identification Number des Geräts, z. B. `11630 0015376` |
+
+```bash
+fritzctl device get "11630 0015376"
+fritzctl -o json device get "11630 0015376" | jq .switchState
+```
+
+---
+
+### `fritzctl device on`
+
+Schaltet ein Gerät ein (z. B. FRITZ!DECT 200/210-Steckdose).
+
+```
+fritzctl [-o <format>] device on <AIN>
+```
+
+```bash
+fritzctl device on "11630 0015376"
+```
+
+---
+
+### `fritzctl device off`
+
+Schaltet ein Gerät aus.
+
+```
+fritzctl [-o <format>] device off <AIN>
+```
+
+```bash
+fritzctl device off "11630 0015376"
+```
+
+---
+
+### `fritzctl device toggle`
+
+Wechselt den Schaltzustand eines Geräts (ein → aus oder aus → ein).
+
+```
+fritzctl [-o <format>] device toggle <AIN>
+```
+
+```bash
+fritzctl device toggle "11630 0015376"
 ```
