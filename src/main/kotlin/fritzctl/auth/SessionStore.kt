@@ -8,6 +8,7 @@ data class Session(
     val sid: String,
     val host: String,
     val username: String,
+    val password: String = "",
 )
 
 object SessionStore {
@@ -25,6 +26,7 @@ object SessionStore {
             sid=${session.sid}
             host=${session.host}
             username=${session.username}
+            password=${session.password}
             """.trimIndent()
         )
         // Restrict file permissions to owner only (rw-------)
@@ -52,6 +54,7 @@ object SessionStore {
                 sid = props["sid"] ?: return null,
                 host = props["host"] ?: return null,
                 username = props["username"] ?: "",
+                password = props["password"] ?: "",
             )
         } catch (e: Exception) {
             null

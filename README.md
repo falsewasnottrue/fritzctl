@@ -69,6 +69,9 @@ Beispiel-Ausgabe (`-o json`, Fehler):
 | [`auth`](#auth) | Authentifizierung – Anmelden und Abmelden an der Fritzbox |
 | [`device`](#device) | Smarthome-Geräte – Auflisten, Anzeigen und Schalten (AHA-HTTP-Schnittstelle) |
 | [`net`](#net) | Netzwerk – Verbundene Geräte und WAN-Status (TR-064-Schnittstelle) |
+| [`wifi`](#wifi) | WLAN – Netze anzeigen, Clients auflisten, WLAN ein-/ausschalten (TR-064-Schnittstelle) |
+| [`call`](#call) | Telefonie – Anrufliste anzeigen (TR-064-Schnittstelle) |
+| [`info`](#info) | Fritz!Box – Modell, Firmware, Uptime und Systemprotokoll (TR-064-Schnittstelle) |
 
 ---
 
@@ -309,3 +312,142 @@ fritzctl -o json net wan | jq .externalIp
 ```
 
 Ausgabefelder: `accessType`, `linkStatus`, `externalIp`, `upstreamMaxBps`, `downstreamMaxBps`, `upstreamCurrentBps`, `downstreamCurrentBps`, `uptimeSeconds`
+
+---
+
+## wifi
+
+Befehle zur WLAN-Verwaltung über die TR-064-Schnittstelle (Service `WLANConfiguration:1/2/3`). Alle Befehle setzen eine aktive Session voraus.
+
+| Befehl | Beschreibung |
+|--------|--------------|
+| [`wifi status`](#fritzctl-wifi-status) | Alle WLAN-Netze mit SSID, Band, Kanal und Status anzeigen |
+| [`wifi clients`](#fritzctl-wifi-clients) | Verbundene WLAN-Geräte auflisten |
+| [`wifi on`](#fritzctl-wifi-on--off) | WLAN einschalten |
+| [`wifi off`](#fritzctl-wifi-on--off) | WLAN ausschalten |
+
+### `fritzctl wifi status`
+
+Zeigt alle konfigurierten WLAN-Netze (2,4 GHz, 5 GHz, Gast) mit SSID, Kanal, Standard (n/ac/ax) und Status.
+
+```
+fritzctl [-o <format>] wifi status
+```
+
+```bash
+fritzctl wifi status
+fritzctl -o json wifi status | jq '.networks[] | select(.enabled) | .ssid'
+```
+
+---
+
+### `fritzctl wifi clients`
+
+Listet alle derzeit per WLAN verbundenen Geräte auf (Name, IP, MAC, Online-Status).
+
+```
+fritzctl [-o <format>] wifi clients
+```
+
+```bash
+fritzctl wifi clients
+fritzctl -o json wifi clients | jq '[.clients[] | select(.active) | .name]'
+```
+
+---
+
+### `fritzctl wifi on` / `off`
+
+Schaltet das Haupt-WLAN (2,4 GHz + 5 GHz) ein oder aus. Mit `--guest` wird stattdessen das Gastnetz gesteuert.
+
+```
+fritzctl [-o <format>] wifi on [--guest]
+fritzctl [-o <format>] wifi off [--guest]
+```
+
+| Option | Kurz | Beschreibung |
+|--------|------|--------------|
+| `--guest` | `-g` | Gastnetz statt Haupt-WLAN |
+
+```bash
+fritzctl wifi off
+fritzctl wifi on --guest
+```
+
+---
+
+## call
+
+Befehle zur Anzeige der Anrufliste über die TR-064-Schnittstelle (Service `X_AVM-DE_OnTel:1`).
+
+| Befehl | Beschreibung |
+|--------|--------------|
+| [`call list`](#fritzctl-call-list) | Anrufliste anzeigen |
+
+### `fritzctl call list`
+
+Gibt die Anrufliste der Fritz!Box aus (eingehend, ausgehend, verpasst). Standardmäßig werden die letzten 30 Einträge gezeigt.
+
+```
+fritzctl [-o <format>] call list [--missed] [--in] [--out] [--limit <n>]
+```
+
+| Option | Kurz | Beschreibung |
+|--------|------|--------------|
+| `--missed` | `-m` | Nur verpasste Anrufe |
+| `--in` | `-i` | Nur eingehende Anrufe |
+| `--out` | `-o` | Nur ausgehende Anrufe |
+| `--limit` | `-n` | Max. Anzahl Einträge (Standard: 30, 0 = alle) |
+
+```bash
+fritzctl call list
+fritzctl call list --missed
+fritzctl call list --limit 10
+fritzctl -o json call list | jq '[.calls[] | select(.type == "verpasst") | .partner]'
+```
+
+Ausgabefelder: `date`, `type` (eingehend/ausgehend/verpasst), `partner`, `name`, `duration`, `device`
+
+---
+
+## info
+
+Befehle zur Anzeige von Fritz!Box-Geräteinformationen über die TR-064-Schnittstelle (Service `DeviceInfo:1`).
+
+| Befehl | Beschreibung |
+|--------|--------------|
+| [`info status`](#fritzctl-info-status) | Modell, Firmware, Seriennummer und Uptime |
+| [`info log`](#fritzctl-info-log) | Systemprotokoll anzeigen |
+
+### `fritzctl info status`
+
+Zeigt Hersteller, Modell, Seriennummer, Firmware- und Hardware-Version sowie die aktuelle Uptime.
+
+```
+fritzctl [-o <format>] info status
+```
+
+```bash
+fritzctl info status
+fritzctl -o json info status | jq .firmwareVersion
+```
+
+---
+
+### `fritzctl info log`
+
+Gibt das Systemprotokoll der Fritz!Box aus (neueste Einträge zuerst).
+
+```
+fritzctl [-o <format>] info log [--limit <n>]
+```
+
+| Option | Kurz | Beschreibung |
+|--------|------|--------------|
+| `--limit` | `-n` | Max. Anzahl Einträge (Standard: 50, 0 = alle) |
+
+```bash
+fritzctl info log
+fritzctl info log --limit 10
+fritzctl -o json info log | jq '.log[]'
+```

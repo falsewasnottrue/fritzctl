@@ -49,7 +49,7 @@ class LoginCommand : CliktCommand(name = "login") {
         try {
             val sid = FritzAuth.login(host, username, password, log)
             val sessionFile = SessionStore.path()
-            SessionStore.save(Session(sid = sid, host = host, username = username))
+            SessionStore.save(Session(sid = sid, host = host, username = username, password = password))
 
             output.success(
                 "host" to host,
